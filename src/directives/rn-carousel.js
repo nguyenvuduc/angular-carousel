@@ -56,6 +56,15 @@
         };
 
     })
+	
+	.service('computeCarouselSlideStyle2', function(DeviceCapabilities) {
+		return function(offset, transitionType){
+			var style = {};
+			var slideTransformValue = 'translate3d(' + offset + '%, 0, 0)';
+			style[DeviceCapabilities.transformProperty] = slideTransformValue;
+			return style;
+		}
+	})
 
     .service('computeCarouselSlideStyle', function(DeviceCapabilities) {
         // compute transition transform properties for a given slide and global offset
@@ -119,7 +128,7 @@
         };
     })
 
-    .directive('rnCarousel', ['$swipe', '$window', '$document', '$parse', '$compile', '$timeout', '$interval', 'computeCarouselSlideStyle', 'createStyleString', 'Tweenable',
+    .directive('rnCarousel', ['$swipe', '$window', '$document', '$parse', '$compile', '$timeout', '$interval', 'computeCarouselSlideStyle2', 'createStyleString', 'Tweenable',
         function($swipe, $window, $document, $parse, $compile, $timeout, $interval, computeCarouselSlideStyle, createStyleString, Tweenable) {
             // internal ids to allow multiple instances
             var carouselId = 0,
@@ -244,9 +253,7 @@
                             // manually apply transformation to carousel childrens
                             // todo : optim : apply only to visible items
                             var x = scope.carouselBufferIndex * 100 + offset;
-                            angular.forEach(getSlidesDOM(), function(child, index) {
-                                child.style.cssText = createStyleString(computeCarouselSlideStyle(index, x, options.transitionType));
-                            });
+							iElement[0].style.cssText = createStyleString(computeCarouselSlideStyle(x, options.transitionType));
                         }
 
                         scope.nextSlide = function(slideOptions) {
@@ -333,12 +340,19 @@
                             }
                         }
 
+                        var isSwipingZone = function(e){
+							return true;
+						}
+
                         function swipeStart(coords, event) {
-                            // console.log('swipeStart', coords, event);
+							// console.log('swipeStart', coords, event);
+                            if (!isSwipingZone(event.target)) {
+                                return;
+                            }
                             if (locked || currentSlides.length <= 1) {
                                 return;
                             }
-                            updateContainerWidth();
+							updateContainerWidth();
                             elX = iElement[0].querySelector('li').getBoundingClientRect().left;
                             pressed = true;
                             startX = coords.x;
@@ -348,9 +362,9 @@
                         function swipeMove(coords, event) {
                             //console.log('swipeMove', coords, event);
                             var x, delta;
-                            bindMouseUpEvent();
-                            if (pressed) {
-                                x = coords.x;
+							if (pressed) {
+                                bindMouseUpEvent();
+								x = coords.x;
                                 delta = startX - x;
                                 if (delta > 2 || delta < -2) {
                                     swipeMoved = true;
@@ -376,11 +390,20 @@
                             // dont use a directive for this
                             var canloop = ((isRepeatBased ? scope[repeatCollection.replace('::', '')].length : currentSlides.length) > 1) ? angular.isDefined(tAttributes['rnCarouselControlsAllowLoop']) : false;
                             var nextSlideIndexCompareValue = isRepeatBased ? repeatCollection.replace('::', '') + '.length - 1' : currentSlides.length - 1;
-                            var tpl = '<div class="rn-carousel-controls">\n' +
-                                '  <span class="rn-carousel-control rn-carousel-control-prev" ng-click="prevSlide()" ng-if="carouselIndex > 0 || ' + canloop + '"></span>\n' +
-                                '  <span class="rn-carousel-control rn-carousel-control-next" ng-click="nextSlide()" ng-if="carouselIndex < ' + nextSlideIndexCompareValue + ' || ' + canloop + '"></span>\n' +
+                            var tpl1 =
+                                '<div class="rn-carousel-control-button-bar previous" ng-if="carouselIndex > 0 || ' + canloop + '">' +
+                                '   <div ng-click="prevSlide()" class="rn-carousel-control-circle-button" type="button" disabled="">' +
+                                '       <svg viewBox="0 0 100 100"><path d="M 10,50 L 60,100 L 70,90 L 30,50  L 70,10 L 60,0 Z" class="arrow"></path></svg>' +
+                                '   </div>' +
                                 '</div>';
-                            iElement.parent().append($compile(angular.element(tpl))(scope));
+                            var tpl2 =
+                                '<div class="rn-carousel-control-button-bar next" ng-if="carouselIndex < ' + nextSlideIndexCompareValue + ' || ' + canloop + '">' +
+                                '   <div ng-click="nextSlide()" class="rn-carousel-control-circle-button" type="button" disabled="">' +
+                                '       <svg viewBox="0 0 100 100"><path d="M 10,50 L 60,100 L 70,90 L 30,50  L 70,10 L 60,0 Z" class="arrow" transform="translate(100, 100) rotate(180)"></path></svg>' +
+                                '   </div>' +
+                                '</div>';
+                            iElement.parent().append($compile(angular.element(tpl1))(scope));
+                            iElement.parent().append($compile(angular.element(tpl2))(scope));
                         }
 
                         if (iAttributes.rnCarouselAutoSlide!==undefined) {
@@ -461,6 +484,13 @@
                                 }
                             });
                         }
+						
+						if (iAttributes.rnCarouselSwipingZonePredicate){
+							var swipingZonePredicate = $parse(iAttributes.rnCarouselSwipingZonePredicate);
+							isSwipingZone = function(e){
+								return swipingZonePredicate(scope)(e);
+							}
+						}
 
                         if (isRepeatBased) {
                             // use rn-carousel-deep-watch to fight the Angular $watchCollection weakness : https://github.com/angular/angular.js/issues/2621

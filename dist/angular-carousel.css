@@ -2,7 +2,7 @@ input[type=range] {
   width: 300px; }
 
 ul[rn-carousel] {
-  overflow: hidden;
+  overflow: visible;
   padding: 0;
   white-space: nowrap;
   position: relative;
@@ -18,7 +18,7 @@ ul[rn-carousel] {
     backface-visibility: hidden;
     overflow: visible;
     vertical-align: top;
-    position: absolute;
+    /*position:absolute;*/
     left: 0;
     right: 0;
     white-space: normal;
@@ -62,3 +62,64 @@ div.rn-carousel-indicator span {
     right: 0.5em; }
     .rn-carousel-control.rn-carousel-control-next:before {
       content: ">"; }
+
+ul.rn-carousel-tab-indicator {
+  list-style: outside none none;
+  margin: 0px;
+  padding: 0px; }
+
+ul.rn-carousel-tab-indicator li {
+  background-color: #F5F5F5;
+  display: table-cell;
+  color: #17C1D7;
+  border-bottom: 3px solid #F5F5F5;
+  margin-left: 3px;
+  margin-right: 3px;
+  outline: 0px none;
+  padding: 10px 20px 10px 20px;
+  cursor: pointer; }
+
+ul.rn-carousel-tab-indicator li.active {
+  background-color: #F5F5F5;
+  color: #11B1C4;
+  border-bottom: 3px solid #21B6C8; }
+
+ul.rn-carousel-tab-indicator li:hover {
+  background-color: #F5F5F5;
+  color: #11B1C4; }
+
+.rn-carousel-control-circle-button {
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 50%;
+  background-color: rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  position: fixed;
+  top: 50%;
+  display: inline-block; }
+
+.rn-carousel-control-circle-button.previous {
+  left: 0px; }
+
+.rn-carousel-control-circle-button.next {
+  right: 0px; }
+
+.rn-carousel-control-button-bar {
+  cursor: pointer;
+  display: inline-block;
+  height: 0px;
+  position: absolute;
+  top: 0px;
+  width: 30px; }
+
+.rn-carousel-control-button-bar:hover {
+  background-color: transparent; }
+
+.rn-carousel-control-button-bar.previous {
+  left: 0px; }
+
+.rn-carousel-control-button-bar.next {
+  right: 0px; }
+
+/*# sourceMappingURL=angular-carousel.css.map */
